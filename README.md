@@ -18,13 +18,13 @@ The Terraform Mailtrap provider allows you to manage Mailtrap resources using Te
 
 1. Clone the repository
 ```bash
-git clone https://github.com/mailtrap/terraform-provider-mailtrap.git
-cd terraform-provider-mailtrap
+git clone https://github.com/yanchuk/mailtrap-terraform.git
+cd mailtrap-terraform
 ```
 
 2. Build the provider
 ```bash
-go build -o terraform-provider-mailtrap
+go build -o mailtrap-terraform
 ```
 
 3. Install the provider locally
