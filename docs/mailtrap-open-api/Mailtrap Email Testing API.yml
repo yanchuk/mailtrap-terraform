@@ -1,0 +1,1780 @@
+openapi: 3.1.0
+info:
+  description: API for Mailtrap.io Sandbox functionality
+  version: 2.0-oas3
+  title: Email Testing API
+  contact:
+    name: Mailtrap
+    url: 'https://help.mailtrap.io'
+    email: support@mailtrap.io
+  license:
+    name: Creative Commons Attribution-ShareAlike 4.0 International (CC BY-SA 4.0)
+    url: 'https://creativecommons.org/licenses/by-sa/4.0/'
+security:
+  - HeaderAuth: []
+  - BearerAuth: []
+servers:
+  - description: Mailtrap Testing API
+    url: 'https://mailtrap.io'
+tags:
+  - name: Attachments
+    description: Interactions with attachments
+  - name: Inboxes
+    description: Interactions with inboxes
+  - name: Messages
+    description: Interactions with messages
+  - name: Projects
+    description: Interactions with projects
+  - name: Test Emails
+    description: Test Emails
+paths:
+  '/api/accounts/{account_id}/projects':
+    post:
+      summary: Create project
+      description: The project name is min 2 characters and max 100 characters long.
+      tags:
+        - Projects
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                project:
+                  type: object
+                  properties:
+                    name:
+                      type: string
+            example:
+              project:
+                name: My New Project
+      responses:
+        '200':
+          $ref: '#/components/responses/ProjectResponse'
+        '401':
+          $ref: '#/components/responses/UNAUTHENTICATED'
+        '403':
+          $ref: '#/components/responses/PERMISSION_DENIED'
+      operationId: createProject
+    get:
+      summary: Get a list of projects
+      description: List projects and their inboxes to which the API token has access.
+      tags:
+        - Projects
+      responses:
+        '200':
+          $ref: '#/components/responses/ProjectsResponse'
+        '401':
+          $ref: '#/components/responses/UNAUTHENTICATED'
+        '403':
+          $ref: '#/components/responses/PERMISSION_DENIED'
+      operationId: getProjects
+    parameters:
+      - $ref: '#/components/parameters/account_id'
+  '/api/accounts/{account_id}/projects/{project_id}':
+    get:
+      summary: Get project by ID
+      description: Get the project and its inboxes.
+      tags:
+        - Projects
+      responses:
+        '200':
+          $ref: '#/components/responses/ProjectResponse'
+        '401':
+          $ref: '#/components/responses/UNAUTHENTICATED'
+        '403':
+          $ref: '#/components/responses/PERMISSION_DENIED'
+        '404':
+          $ref: '#/components/responses/NOT_FOUND'
+      operationId: getProject
+    patch:
+      summary: Update project
+      description: Update project name. The project name is min 2 characters and max 100 characters long.
+      tags:
+        - Projects
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                project:
+                  type: object
+                  properties:
+                    name:
+                      type: string
+            example:
+              project:
+                name: New Project Name
+      responses:
+        '200':
+          $ref: '#/components/responses/UpdateProjectResponse'
+        '401':
+          $ref: '#/components/responses/UNAUTHENTICATED'
+        '403':
+          $ref: '#/components/responses/PERMISSION_DENIED'
+        '404':
+          $ref: '#/components/responses/NOT_FOUND'
+      operationId: updateProject
+    delete:
+      summary: Delete project
+      description: Delete project and its inboxes.
+      tags:
+        - Projects
+      responses:
+        '200':
+          description: Returns id of the deleted project.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+              example:
+                id: 4046
+        '401':
+          $ref: '#/components/responses/UNAUTHENTICATED'
+        '403':
+          $ref: '#/components/responses/PERMISSION_DENIED'
+        '404':
+          $ref: '#/components/responses/NOT_FOUND'
+      operationId: deleteProject
+    parameters:
+      - $ref: '#/components/parameters/account_id'
+      - $ref: '#/components/parameters/project_id'
+  '/api/accounts/{account_id}/projects/{project_id}/inboxes':
+    post:
+      summary: Create an inbox
+      description: Create an inbox in a project.
+      tags:
+        - Inboxes
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                inbox:
+                  type: object
+                  properties:
+                    name:
+                      type: string
+            example:
+              inbox:
+                name: My new inbox
+      responses:
+        '200':
+          $ref: '#/components/responses/InboxResponse'
+        '401':
+          $ref: '#/components/responses/UNAUTHENTICATED'
+        '403':
+          $ref: '#/components/responses/PERMISSION_DENIED'
+        '404':
+          $ref: '#/components/responses/NOT_FOUND'
+      operationId: createInbox
+    parameters:
+      - $ref: '#/components/parameters/account_id'
+      - $ref: '#/components/parameters/project_id'
+  '/api/accounts/{account_id}/inboxes/{inbox_id}':
+    get:
+      summary: Get inbox attributes
+      description: Get inbox attributes by inbox id. See the list of attributes in the example
+      tags:
+        - Inboxes
+      responses:
+        '200':
+          $ref: '#/components/responses/InboxResponse'
+        '401':
+          $ref: '#/components/responses/UNAUTHENTICATED'
+        '403':
+          $ref: '#/components/responses/PERMISSION_DENIED'
+        '404':
+          $ref: '#/components/responses/NOT_FOUND'
+      operationId: getInboxAttributes
+    delete:
+      summary: Delete an inbox
+      description: Delete an inbox with all its emails.
+      tags:
+        - Inboxes
+      responses:
+        '200':
+          $ref: '#/components/responses/InboxResponse'
+        '401':
+          $ref: '#/components/responses/UNAUTHENTICATED'
+        '403':
+          $ref: '#/components/responses/PERMISSION_DENIED'
+        '404':
+          $ref: '#/components/responses/NOT_FOUND'
+      operationId: deleteInbox
+    patch:
+      summary: Update an inbox
+      description: 'Update inbox name, inbox email username.'
+      tags:
+        - Inboxes
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                inbox:
+                  type: object
+                  properties:
+                    name:
+                      type: string
+                    email_username:
+                      type: string
+            example:
+              inbox:
+                name: New Inbox Name
+                email_username: my-username
+      responses:
+        '200':
+          $ref: '#/components/responses/InboxResponse'
+        '401':
+          $ref: '#/components/responses/UNAUTHENTICATED'
+        '403':
+          $ref: '#/components/responses/PERMISSION_DENIED'
+        '404':
+          $ref: '#/components/responses/NOT_FOUND'
+      operationId: updateInbox
+    parameters:
+      - $ref: '#/components/parameters/account_id'
+      - $ref: '#/components/parameters/inbox_id'
+  '/api/accounts/{account_id}/inboxes/{inbox_id}/clean':
+    patch:
+      summary: Clean inbox
+      description: Delete all messages (emails) from inbox.
+      tags:
+        - Inboxes
+      responses:
+        '200':
+          $ref: '#/components/responses/InboxResponse'
+        '401':
+          $ref: '#/components/responses/UNAUTHENTICATED'
+        '403':
+          $ref: '#/components/responses/PERMISSION_DENIED'
+        '404':
+          $ref: '#/components/responses/NOT_FOUND'
+      operationId: cleanInbox
+    parameters:
+      - $ref: '#/components/parameters/account_id'
+      - $ref: '#/components/parameters/inbox_id'
+  '/api/accounts/{account_id}/inboxes/{inbox_id}/all_read':
+    patch:
+      summary: Mark as read
+      description: Mark all messages in the inbox as read.
+      tags:
+        - Inboxes
+      responses:
+        '200':
+          $ref: '#/components/responses/InboxResponse'
+        '401':
+          $ref: '#/components/responses/UNAUTHENTICATED'
+        '403':
+          $ref: '#/components/responses/PERMISSION_DENIED'
+        '404':
+          $ref: '#/components/responses/NOT_FOUND'
+      operationId: markAsReadInbox
+    parameters:
+      - $ref: '#/components/parameters/account_id'
+      - $ref: '#/components/parameters/inbox_id'
+  '/api/accounts/{account_id}/inboxes/{inbox_id}/reset_credentials':
+    patch:
+      summary: Reset credentials
+      description: Reset SMTP credentials of the inbox.
+      tags:
+        - Inboxes
+      responses:
+        '200':
+          $ref: '#/components/responses/InboxResponse'
+        '401':
+          $ref: '#/components/responses/UNAUTHENTICATED'
+        '403':
+          $ref: '#/components/responses/PERMISSION_DENIED'
+        '404':
+          $ref: '#/components/responses/NOT_FOUND'
+      operationId: resetInboxCredentials
+    parameters:
+      - $ref: '#/components/parameters/account_id'
+      - $ref: '#/components/parameters/inbox_id'
+  '/api/accounts/{account_id}/inboxes/{inbox_id}/toggle_email_username':
+    patch:
+      summary: Enable email address
+      description: Turn the email address of the inbox on/off.
+      tags:
+        - Inboxes
+      responses:
+        '200':
+          $ref: '#/components/responses/InboxResponse'
+        '401':
+          $ref: '#/components/responses/UNAUTHENTICATED'
+        '403':
+          $ref: '#/components/responses/PERMISSION_DENIED'
+        '404':
+          $ref: '#/components/responses/NOT_FOUND'
+      operationId: enableInboxEmailAddresses
+    parameters:
+      - $ref: '#/components/parameters/account_id'
+      - $ref: '#/components/parameters/inbox_id'
+  '/api/accounts/{account_id}/inboxes/{inbox_id}/reset_email_username':
+    patch:
+      summary: Reset email address
+      description: Reset username of email address per inbox.
+      tags:
+        - Inboxes
+      responses:
+        '200':
+          $ref: '#/components/responses/InboxResponse'
+        '401':
+          $ref: '#/components/responses/UNAUTHENTICATED'
+        '403':
+          $ref: '#/components/responses/PERMISSION_DENIED'
+        '404':
+          $ref: '#/components/responses/NOT_FOUND'
+      operationId: resetEmailUserNamePerInbox
+    parameters:
+      - $ref: '#/components/parameters/account_id'
+      - $ref: '#/components/parameters/inbox_id'
+  '/api/accounts/{account_id}/inboxes':
+    get:
+      summary: Get a list of inboxes
+      description: Get a list of inboxes.
+      tags:
+        - Inboxes
+      responses:
+        '200':
+          $ref: '#/components/responses/InboxesResponse'
+        '401':
+          $ref: '#/components/responses/UNAUTHENTICATED'
+        '403':
+          $ref: '#/components/responses/PERMISSION_DENIED'
+      operationId: getInboxes
+    parameters:
+      - $ref: '#/components/parameters/account_id'
+  '/api/send/{inbox_id}':
+    servers:
+      - description: Mailtrap Testing API mail server
+        url: 'https://sandbox.api.mailtrap.io'
+    post:
+      description: Send email message to the specified inbox.
+      operationId: sendEmail
+      summary: Send email (including templates)
+      tags:
+        - Test Emails
+      requestBody:
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - $ref: '#/components/schemas/EmailWithText'
+                - $ref: '#/components/schemas/EmailWithHtml'
+                - $ref: '#/components/schemas/EmailWithTextAndHtml'
+                - $ref: '#/components/schemas/EmailFromTemplate'
+      responses:
+        '200':
+          description: Success. Message has been delivered.
+          content:
+            application/json:
+              schema:
+                $ref: ../models/SentResponse.yaml
+        '400':
+          description: Bad request. Fix errors listed in response before retrying.
+          content:
+            application/json:
+              schema:
+                $ref: ../models/SendEmailErrorResponse.yaml
+        '401':
+          description: Unauthorized. Make sure you are sending correct credentials with the request before retrying.
+          content:
+            application/json:
+              schema:
+                $ref: ../models/SendEmailErrorResponse.yaml
+        '429':
+          description: Billing plan limit exhausted or inbox rate limit exceeded (see the response for details).
+          content:
+            application/json:
+              schema:
+                $ref: ../models/SendEmailErrorResponse.yaml
+        '500':
+          description: Internal error. Mail was not delivered. Retry later or contact support.
+          content:
+            application/json:
+              schema:
+                $ref: ../models/SendEmailErrorResponse.yaml
+    parameters:
+      - $ref: '#/components/parameters/inbox_id'
+  '/api/batch/{inbox_id}':
+    servers:
+      - description: Mailtrap Testing API mail server
+        url: 'https://sandbox.api.mailtrap.io'
+    post:
+      description: |
+        Batch send email (text, html, text&html, templates). Please note that the endpoint will return a 200-level http status, even when sending for individual messages may fail. Users of this endpoint should check the success and errors for each message in the response (the results are ordered the same as the original messages - `requests`). Please note that the endpoint accepts up to 500 messages per API call, and up to 50 MB payload size, including attachments.
+      operationId: batchSendEmail
+      summary: Batch send email (including templates)
+      tags:
+        - Test Emails
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BatchEmail'
+      responses:
+        '200':
+          description: Success. Check individual `responses` if messages have been delivered.
+          content:
+            application/json:
+              schema:
+                $ref: ../models/BatchSentResponse.yaml
+        '400':
+          description: Bad request. Fix errors listed in response before retrying.
+          content:
+            application/json:
+              schema:
+                $ref: ../models/SendEmailErrorResponse.yaml
+        '401':
+          description: Unauthorized. Make sure you are sending correct credentials with the request before retrying.
+          content:
+            application/json:
+              schema:
+                $ref: ../models/SendEmailErrorResponse.yaml
+        '500':
+          description: Internal error. Messages were not delivered. Retry later or contact support.
+          content:
+            application/json:
+              schema:
+                $ref: ../models/SendEmailErrorResponse.yaml
+    parameters:
+      - $ref: '#/components/parameters/inbox_id'
+  '/api/accounts/{account_id}/inboxes/{inbox_id}/messages/{message_id}':
+    get:
+      summary: Show email message
+      description: Get email message by ID.
+      tags:
+        - Messages
+      responses:
+        '200':
+          description: Returns email message with its attributes.
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/InboxMessageWithoutBlacklistsReportInfo'
+                  - $ref: '#/components/schemas/InboxMessageWithBlacklistsReportInfo'
+              example:
+                id: 2323
+                inbox_id: 17002
+                subject: Test email
+                sent_at: '2022-07-01T19:29:59.295Z'
+                from_email: john@mailtrap.io
+                from_name: John
+                to_email: mary@mailtrap.io
+                to_name: Mary
+                email_size: 300
+                is_read: false
+                created_at: '2022-07-01T19:29:59.295Z'
+                updated_at: '2022-07-01T19:29:59.295Z'
+                html_body_size: 150
+                text_body_size: 100
+                human_size: 300 Bytes
+                html_path: /api/accounts/16297/inboxes/17002/messages/2323/body.html
+                txt_path: /api/accounts/16297/inboxes/17002/messages/2323/body.txt
+                raw_path: /api/accounts/16297/inboxes/17002/messages/2323/body.raw
+                download_path: /api/accounts/16297/inboxes/17002/messages/2323/body.eml
+                html_source_path: /api/accounts/16297/inboxes/17002/messages/2323/body.htmlsource
+                blacklists_report_info: false
+                smtp_information:
+                  ok: true
+                  data:
+                    mail_from_addr: john@mailtrap.io
+                    client_ip: 193.62.62.184
+        '401':
+          $ref: '#/components/responses/UNAUTHENTICATED'
+        '403':
+          description: Returns forbidden error message. Check your permissions.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  errors:
+                    type: string
+                    example: Inbox is not active or you have insufficient permissions
+        '404':
+          $ref: '#/components/responses/NOT_FOUND'
+      operationId: showInboxEmailMessage
+    patch:
+      summary: Update message
+      description: Update message attributes (right now only the **is_read** attribute is available for modification).
+      tags:
+        - Messages
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                message:
+                  type: object
+                  properties:
+                    is_read:
+                      type: string
+            example:
+              message:
+                is_read: 'false'
+      responses:
+        '200':
+          description: Returns attributes of the updated message.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                  inbox_id:
+                    type: integer
+                  subject:
+                    type: string
+                  sent_at:
+                    type: string
+                  from_email:
+                    type: string
+                  from_name:
+                    type: string
+                  to_email:
+                    type: string
+                  to_name:
+                    type: string
+                  email_size:
+                    type: integer
+                  is_read:
+                    type: boolean
+                  created_at:
+                    type: string
+                  updated_at:
+                    type: string
+                  html_body_size:
+                    type: integer
+                  text_body_size:
+                    type: integer
+                  human_size:
+                    type: string
+                  html_path:
+                    type: string
+                  txt_path:
+                    type: string
+                  raw_path:
+                    type: string
+                  download_path:
+                    type: string
+                  html_source_path:
+                    type: string
+                  blacklists_report_info:
+                    type: boolean
+                  smtp_information:
+                    type: object
+                    properties:
+                      ok:
+                        type: boolean
+                      data:
+                        type: object
+                        properties:
+                          mail_from_addr:
+                            type: string
+                          client_ip:
+                            type: string
+              example:
+                id: 427
+                inbox_id: 4324
+                subject: Test email
+                sent_at: '2022-06-02T19:24:08.941Z'
+                from_email: john@mailtrap.io
+                from_name: John
+                to_email: mary@mailtrap.io
+                to_name: Mary
+                email_size: 300
+                is_read: false
+                created_at: '2022-06-02T19:24:08.942Z'
+                updated_at: '2022-06-02T19:24:08.942Z'
+                html_body_size: 150
+                text_body_size: 100
+                human_size: 300 Bytes
+                html_path: /api/accounts/3761/inboxes/4324/messages/427/body.html
+                txt_path: /api/accounts/3761/inboxes/4324/messages/427/body.txt
+                raw_path: /api/accounts/3761/inboxes/4324/messages/427/body.raw
+                download_path: /api/accounts/3761/inboxes/4324/messages/427/body.eml
+                html_source_path: /api/accounts/3761/inboxes/4324/messages/427/body.htmlsource
+                blacklists_report_info: false
+                smtp_information:
+                  ok: true
+                  data:
+                    mail_from_addr: john@mailtrap.io
+                    client_ip: 193.62.62.184
+        '401':
+          $ref: '#/components/responses/UNAUTHENTICATED'
+        '403':
+          description: Returns forbidden error message. Check your permissions.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  errors:
+                    type: string
+                    example: Inbox is not active or you have insufficient permissions
+        '404':
+          $ref: '#/components/responses/NOT_FOUND'
+      operationId: updateInboxEmailMessage
+    delete:
+      summary: Delete message
+      description: Delete message from inbox.
+      tags:
+        - Messages
+      responses:
+        '200':
+          description: Returns attributes of the deleted message.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                  inbox_id:
+                    type: integer
+                  subject:
+                    type: string
+                  sent_at:
+                    type: string
+                  from_email:
+                    type: string
+                  from_name:
+                    type: string
+                  to_email:
+                    type: string
+                  to_name:
+                    type: string
+                  email_size:
+                    type: integer
+                  is_read:
+                    type: boolean
+                  created_at:
+                    type: string
+                  updated_at:
+                    type: string
+                  html_body_size:
+                    type: integer
+                  text_body_size:
+                    type: integer
+                  human_size:
+                    type: string
+                  html_path:
+                    type: string
+                  txt_path:
+                    type: string
+                  raw_path:
+                    type: string
+                  download_path:
+                    type: string
+                  html_source_path:
+                    type: string
+                  blacklists_report_info:
+                    type: boolean
+                  smtp_information:
+                    type: object
+                    properties:
+                      ok:
+                        type: boolean
+                      data:
+                        type: object
+                        properties:
+                          mail_from_addr:
+                            type: string
+                          client_ip:
+                            type: string
+              example:
+                id: 433
+                inbox_id: 4338
+                subject: Test email
+                sent_at: '2022-06-02T19:24:10.746Z'
+                from_email: john@mailtrap.io
+                from_name: John
+                to_email: mary@mailtrap.io
+                to_name: Mary
+                email_size: 300
+                is_read: false
+                created_at: '2022-06-02T19:24:10.747Z'
+                updated_at: '2022-06-02T19:24:10.747Z'
+                html_body_size: 150
+                text_body_size: 100
+                human_size: 300 Bytes
+                html_path: /api/accounts/3775/inboxes/4338/messages/433/body.html
+                txt_path: /api/accounts/3775/inboxes/4338/messages/433/body.txt
+                raw_path: /api/accounts/3775/inboxes/4338/messages/433/body.raw
+                download_path: /api/accounts/3775/inboxes/4338/messages/433/body.eml
+                html_source_path: /api/accounts/3775/inboxes/4338/messages/433/body.htmlsource
+                blacklists_report_info: false
+                smtp_information:
+                  ok: true
+                  data:
+                    mail_from_addr: john@mailtrap.io
+                    client_ip: 193.62.62.184
+        '401':
+          $ref: '#/components/responses/UNAUTHENTICATED'
+        '403':
+          $ref: '#/components/responses/PERMISSION_DENIED'
+        '404':
+          $ref: '#/components/responses/NOT_FOUND'
+      operationId: deleteInboxEmailMessage
+    parameters:
+      - $ref: '#/components/parameters/account_id'
+      - $ref: '#/components/parameters/inbox_id'
+      - $ref: '#/components/parameters/message_id'
+  '/api/accounts/{account_id}/inboxes/{inbox_id}/messages':
+    get:
+      summary: Get messages
+      description: Get all messages in the inbox. The response contains up to 30 messages. Use `last_id` or `page` to retrieve more.
+      tags:
+        - Messages
+      responses:
+        '200':
+          description: lists messages
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                    inbox_id:
+                      type: integer
+                    subject:
+                      type: string
+                    sent_at:
+                      type: string
+                    from_email:
+                      type: string
+                    from_name:
+                      type: string
+                    to_email:
+                      type: string
+                    to_name:
+                      type: string
+                    email_size:
+                      type: integer
+                    is_read:
+                      type: boolean
+                    created_at:
+                      type: string
+                    updated_at:
+                      type: string
+                    html_body_size:
+                      type: integer
+                    text_body_size:
+                      type: integer
+                    human_size:
+                      type: string
+                    html_path:
+                      type: string
+                    txt_path:
+                      type: string
+                    raw_path:
+                      type: string
+                    download_path:
+                      type: string
+                    html_source_path:
+                      type: string
+                    blacklists_report_info:
+                      type: boolean
+                    smtp_information:
+                      type: object
+                      properties:
+                        ok:
+                          type: boolean
+                        data:
+                          type: object
+                          properties:
+                            mail_from_addr:
+                              type: string
+                            client_ip:
+                              type: string
+              example:
+                - id: 92
+                  inbox_id: 342
+                  subject: Test email
+                  sent_at: '2022-08-19T11:34:33.839Z'
+                  from_email: per667son25@feeney.biz
+                  from_name: Ela Marks
+                  to_email: per688son26@donnelly.info
+                  to_name: Edmund Maggio
+                  email_size: 300
+                  is_read: false
+                  created_at: '2022-08-19T11:34:33.841Z'
+                  updated_at: '2022-08-19T11:34:33.841Z'
+                  html_body_size: 150
+                  text_body_size: 100
+                  human_size: 300 Bytes
+                  html_path: /api/accounts/336/inboxes/342/messages/92/body.html
+                  txt_path: /api/accounts/336/inboxes/342/messages/92/body.txt
+                  raw_path: /api/accounts/336/inboxes/342/messages/92/body.raw
+                  download_path: /api/accounts/336/inboxes/342/messages/92/body.eml
+                  html_source_path: /api/accounts/336/inboxes/342/messages/92/body.htmlsource
+                  blacklists_report_info: false
+                  smtp_information:
+                    ok: true
+                    data:
+                      mail_from_addr: per667son25@feeney.biz
+                      client_ip: 75.180.183.201
+        '401':
+          $ref: '#/components/responses/UNAUTHENTICATED'
+        '403':
+          description: Returns forbidden error message. Check your permissions.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  errors:
+                    type: string
+                    example: Inbox is not active or you have insufficient permissions
+      operationId: getInboxEmailMessage
+      parameters:
+        - schema:
+            type: string
+            example: welcome
+          in: query
+          name: search
+          description: 'Search query string. Matches `subject`, `to_email`,  and `to_name`.'
+        - schema:
+            type: number
+            example: 123
+            minimum: 1
+          in: query
+          name: last_id
+          description: 'If specified, a page of records before `last_id` is  returned. Overrides `page` if both are given.'
+        - schema:
+            type: number
+            example: 5
+            minimum: 1
+          in: query
+          name: page
+          description: Page number for paginated results.
+    parameters:
+      - $ref: '#/components/parameters/account_id'
+      - $ref: '#/components/parameters/inbox_id'
+  '/api/accounts/{account_id}/inboxes/{inbox_id}/messages/{message_id}/forward':
+    post:
+      summary: Forward message
+      description: Forward message to an email address. The email address must be confirmed by the recipient in advance.
+      tags:
+        - Messages
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  example: jack@mailtrap.io
+      responses:
+        '200':
+          description: Returns confirmation about forwarding.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+              example:
+                message: Your email message has been successfully forwarded
+        '401':
+          $ref: '#/components/responses/UNAUTHENTICATED'
+        '403':
+          description: Returns forbidden error message. Check your permissions.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  errors:
+                    type: string
+                    example: Inbox is not active or you have insufficient permissions
+        '404':
+          $ref: '#/components/responses/NOT_FOUND'
+      operationId: forwardInboxEmailMessage
+    parameters:
+      - $ref: '#/components/parameters/account_id'
+      - $ref: '#/components/parameters/inbox_id'
+      - $ref: '#/components/parameters/message_id'
+  '/api/accounts/{account_id}/inboxes/{inbox_id}/messages/{message_id}/spam_report':
+    get:
+      summary: Get message spam score
+      description: Get a brief spam report by message ID.
+      tags:
+        - Messages
+      responses:
+        '200':
+          description: Returns message spam analysis report.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  report:
+                    type: object
+                    properties:
+                      ResponseCode:
+                        type: integer
+                      ResponseMessage:
+                        type: string
+                      ResponseVersion:
+                        type: string
+                      Score:
+                        type: number
+                        format: float
+                      Spam:
+                        type: boolean
+                      Threshold:
+                        type: number
+                        format: float
+                      Details:
+                        type: array
+                        items:
+                          type: object
+                          nullable: true
+                          properties:
+                            Pts:
+                              type: number
+                              format: float
+                            RuleName:
+                              type: string
+                            Description:
+                              type: string
+              example:
+                report:
+                  ResponseCode: 2
+                  ResponseMessage: Not spam
+                  ResponseVersion: '1.2'
+                  Score: 1.2
+                  Spam: false
+                  Threshold: 5
+                  Details:
+                    - Pts: 0
+                      RuleName: HTML_MESSAGE
+                      Description: 'BODY: HTML included in message'
+        '401':
+          $ref: '#/components/responses/UNAUTHENTICATED'
+        '403':
+          description: Returns forbidden error message. Check your permissions.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  errors:
+                    type: string
+                    example: Inbox is not active or you have insufficient permissions
+        '404':
+          $ref: '#/components/responses/NOT_FOUND'
+      operationId: getInboxEmailMessageSpamReport
+    parameters:
+      - $ref: '#/components/parameters/account_id'
+      - $ref: '#/components/parameters/inbox_id'
+      - $ref: '#/components/parameters/message_id'
+  '/api/accounts/{account_id}/inboxes/{inbox_id}/messages/{message_id}/analyze':
+    get:
+      summary: Get message HTML analysis
+      description: Get a brief HTML report by message ID.
+      tags:
+        - Messages
+      responses:
+        '200':
+          description: Returns message HTML analysis report.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  report:
+                    type: object
+                    properties:
+                      success:
+                        type: string
+                      errors:
+                        type: array
+                        items:
+                          type: object
+                          nullable: true
+                          properties:
+                            error_line:
+                              type: number
+                            rule_name:
+                              type: string
+                            email_clients:
+                              type: object
+                              properties:
+                                desktop:
+                                  type: array
+                                  items:
+                                    type: string
+                                mobile:
+                                  type: array
+                                  items:
+                                    type: string
+                                web:
+                                  type: array
+                                  items:
+                                    type: string
+              example:
+                report:
+                  status: success
+                  errors:
+                    - error_line: 15
+                      rule_name: style
+                      email_clients:
+                        desktop:
+                          - Notes 6 / 7
+                        mobile:
+                          - Gmail
+                    - error_line: 7
+                      rule_name: display
+                      email_clients:
+                        desktop:
+                          - AOL Desktop
+                          - IBM Notes 9
+                          - Outlook 2000–03
+                          - Outlook 2007–16
+                          - Outlook Express
+                          - Postbox
+                          - Windows 10 Mail
+                          - Windows Live Mail
+                        mobile:
+                          - Android 4.2.2 Mail
+                          - Android 4.4.4 Mail
+                          - BlackBerry
+                          - Gmail Android app IMAP
+                          - Google Inbox Android app
+                          - Windows Phone 8 Mail
+                          - Yahoo! Mail Android app
+                          - Yahoo! Mail iOS app
+                        web:
+                          - Yahoo! Mail
+        '401':
+          $ref: '#/components/responses/UNAUTHENTICATED'
+        '403':
+          description: Returns forbidden error message. Check your permissions.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  errors:
+                    type: string
+                    example: Inbox is not active or you have insufficient permissions
+        '404':
+          $ref: '#/components/responses/NOT_FOUND'
+      operationId: getInboxEmailMessageHTMLAnalysis
+    parameters:
+      - $ref: '#/components/parameters/account_id'
+      - $ref: '#/components/parameters/inbox_id'
+      - $ref: '#/components/parameters/message_id'
+  '/api/accounts/{account_id}/inboxes/{inbox_id}/messages/{message_id}/body.txt':
+    get:
+      summary: Get text message
+      description: 'Get text email body, if it exists.'
+      tags:
+        - Messages
+      responses:
+        '200':
+          description: Returns message body in txt format.
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: |
+                  Congrats for sending test email with Mailtrap!
+
+                  Inspect it using the tabs above and learn how this email can be improved.
+                  Now send your email using our fake SMTP server and integration of your choice!
+
+                  Good luck! Hope it works.
+        '401':
+          description: Returns unauthorized error message. Check your credentials.
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: '{"error":"Incorrect API token"}'
+        '403':
+          description: Returns forbidden error message. Check your permissions.
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: '{:errors=>"Inbox is not active or you have insufficient permissions"}'
+        '404':
+          $ref: '#/components/responses/NOT_FOUND'
+      operationId: getInboxEmailMessageBodyAsTxt
+    parameters:
+      - $ref: '#/components/parameters/account_id'
+      - $ref: '#/components/parameters/inbox_id'
+      - $ref: '#/components/parameters/message_id'
+  '/api/accounts/{account_id}/inboxes/{inbox_id}/messages/{message_id}/body.raw':
+    get:
+      summary: Get raw message
+      description: Get raw email body.
+      tags:
+        - Messages
+      responses:
+        '200':
+          description: Returns raw message body.
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: |
+                  From: Magic Elves <from@example.com>
+                  To: Mailtrap Inbox <to@example.com>
+                  Subject: You are awesome!
+                  Content-Type: multipart/alternative; boundary="boundary-string"
+
+                  --boundary-string
+                  Content-Type: text/plain; charset="utf-8"
+                  Content-Transfer-Encoding: quoted-printable
+                  Content-Disposition: inline
+
+                  Congrats for sending test email with Mailtrap!
+
+                  Inspect it using the tabs above and learn how this email can be improved.
+                  Now send your email using our fake SMTP server and integration of your choice!
+
+                  Good luck! Hope it works.
+
+                  --boundary-string
+                  Content-Type: text/html; charset="utf-8"
+                  Content-Transfer-Encoding: quoted-printable
+                  Content-Disposition: inline
+
+                  <!doctype html>
+                  <html>
+                  <head>
+                  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+                  </head>
+                  <body style="font-family: sans-serif;">
+                    <div style="display: block; margin: auto; max-width: 600px;" class="main">
+                      <h1 style="font-size: 18px; font-weight: bold; margin-top: 20px">
+                        Congrats for sending test email with Mailtrap!
+                      </h1>
+                      <p>Inspect it using the tabs you see above and learn how this email can be improved.</p>
+                      <img
+                        alt="Inspect with Tabs"
+                        src="https://assets-examples.mailtrap.io/integration-examples/welcome.png"
+                        style="width: 100%;"
+                      >
+                        <p>Now send your email using our fake SMTP server and integration of your choice!</p>
+                        <p>Good luck! Hope it works.</p>
+                      </div>
+                      <!-- Example of invalid for email html/css, will be detected by Mailtrap: -->
+                      <style>
+                        .main { background-color: white; }
+                        a:hover { border-left-width: 1em; min-height: 2em; }
+                      </style>
+                    </body>
+                  </html>
+
+                  --boundary-string--
+        '401':
+          description: Returns unauthorized error message. Check your credentials.
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: '{"error":"Incorrect API token"}'
+        '403':
+          description: Returns forbidden error message. Check your permissions.
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: '{:errors=>"Inbox is not active or you have insufficient permissions"}'
+        '404':
+          $ref: '#/components/responses/NOT_FOUND'
+      operationId: getInboxEmailMessageBodyAsRaw
+    parameters:
+      - $ref: '#/components/parameters/account_id'
+      - $ref: '#/components/parameters/inbox_id'
+      - $ref: '#/components/parameters/message_id'
+  '/api/accounts/{account_id}/inboxes/{inbox_id}/messages/{message_id}/body.htmlsource':
+    get:
+      summary: Get message source
+      description: Get HTML source of email.
+      tags:
+        - Messages
+      responses:
+        '200':
+          description: Returns HTML source of a message.
+          content:
+            text/html:
+              schema:
+                type: string
+                example: |
+                  <!doctype html>
+                  <html>
+                    <head>
+                      <meta http-equiv="Content-Type"
+                        content="text/html; charset=UTF-8">
+                    </head>
+                    <body style="font-family:
+                      sans-serif;">
+                      <div style="display: block; margin: auto; max-width:
+                        600px;" class="main">
+                        <h1 style="font-size: 18px; font-weight: bold;
+                          margin-top: 20px">Congrats for sending test email with Mailtrap!</h1>
+                        <p>Inspect it using the tabs you see above and learn how this email
+                          can be improved.
+                        </p>
+                        <img alt="Inspect with Tabs" src="https://assets-examples.mailtrap.io/integration-examples/welcome.png"
+                          style="width: 100%;">
+                        <p>Now send your email using our fake SMTP server
+                          and integration of your choice!
+                        </p>
+                        <p>Good luck! Hope it works.</p>
+                      </div>
+                      <!-- Example of invalid for email html/css, will be detected
+                        by Mailtrap: -->
+                      <style> .main { background-color: white; } a:hover
+                        { border-left-width: 1em; min-height: 2em; }
+                      </style>
+                    </body>
+                  </html>
+        '401':
+          description: Returns unauthorized error message. Check your credentials.
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: '{"error":"Incorrect API token"}'
+        '403':
+          description: Returns forbidden error message. Check your permissions.
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: '{:errors=>"Inbox is not active or you have insufficient permissions"}'
+        '404':
+          $ref: '#/components/responses/NOT_FOUND'
+      operationId: getInboxEmailMessageBodyAsHtmlSource
+    parameters:
+      - $ref: '#/components/parameters/account_id'
+      - $ref: '#/components/parameters/inbox_id'
+      - $ref: '#/components/parameters/message_id'
+  '/api/accounts/{account_id}/inboxes/{inbox_id}/messages/{message_id}/body.html':
+    get:
+      summary: Get HTML message
+      description: Get formatted HTML email body. Not applicable for plain text emails.
+      tags:
+        - Messages
+      responses:
+        '200':
+          description: Returns message body in html format.
+          content:
+            text/html:
+              schema:
+                type: string
+                example: |
+                  <!doctype html>
+                  <html>
+                    <head>
+                      <meta http-equiv="Content-Type"
+                        content="text/html; charset=UTF-8">
+                    </head>
+                    <body style="font-family:
+                      sans-serif;">
+                      <div style="display: block; margin: auto; max-width:
+                        600px;" class="main">
+                        <h1 style="font-size: 18px; font-weight: bold;
+                          margin-top: 20px">Congrats for sending test email with Mailtrap!</h1>
+                        <p>Inspect it using the tabs you see above and learn how this email
+                          can be improved.
+                        </p>
+                        <img alt="Inspect with Tabs" src="https://assets-examples.mailtrap.io/integration-examples/welcome.png"
+                          style="width: 100%;">
+                        <p>Now send your email using our fake SMTP server
+                          and integration of your choice!
+                        </p>
+                        <p>Good luck! Hope it works.</p>
+                      </div>
+                      <!-- Example of invalid for email html/css, will be detected
+                        by Mailtrap: -->
+                      <style> .main { background-color: white; } a:hover
+                        { border-left-width: 1em; min-height: 2em; }
+                      </style>
+                    </body>
+                  </html>
+        '401':
+          $ref: '#/components/responses/UNAUTHENTICATED'
+        '403':
+          description: Returns forbidden error message. Check your permissions.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  errors:
+                    type: string
+                    example: Inbox is not active or you have insufficient permissions
+        '404':
+          $ref: '#/components/responses/NOT_FOUND'
+      operationId: getInboxEmailMessageBodyAsHtml
+    parameters:
+      - $ref: '#/components/parameters/account_id'
+      - $ref: '#/components/parameters/inbox_id'
+      - $ref: '#/components/parameters/message_id'
+  '/api/accounts/{account_id}/inboxes/{inbox_id}/messages/{message_id}/body.eml':
+    get:
+      summary: Get message as .eml
+      description: Get email message in .eml format.
+      tags:
+        - Messages
+      responses:
+        '200':
+          description: Returns .eml of the message.
+          content:
+            message/rfc822:
+              schema:
+                type: string
+                format: binary
+                example: |
+                  From: Magic Elves <from@example.com>
+                  To: Mailtrap Inbox <to@example.com>
+                  Subject: You are awesome!
+                  Content-Type: multipart/alternative; boundary="boundary-string"
+
+                  --boundary-string
+                  Content-Type: text/plain; charset="utf-8"
+                  Content-Transfer-Encoding: quoted-printable
+                  Content-Disposition: inline
+
+                  Congrats for sending test email with Mailtrap!
+
+                  Inspect it using the tabs above and learn how this email can be improved.
+                  Now send your email using our fake SMTP server and integration of your choice!
+
+                  Good luck! Hope it works.
+
+                  --boundary-string
+                  Content-Type: text/html; charset="utf-8"
+                  Content-Transfer-Encoding: quoted-printable
+                  Content-Disposition: inline
+
+                  <!doctype html>
+                  <html>
+                  <head>
+                  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+                  </head>
+                  <body style="font-family: sans-serif;">
+                    <div style="display: block; margin: auto; max-width: 600px;" class="main">
+                      <h1 style="font-size: 18px; font-weight: bold; margin-top: 20px">
+                        Congrats for sending test email with Mailtrap!
+                      </h1>
+                      <p>Inspect it using the tabs you see above and learn how this email can be improved.</p>
+                      <img
+                        alt="Inspect with Tabs"
+                        src="https://assets-examples.mailtrap.io/integration-examples/welcome.png"
+                        style="width: 100%;"
+                      >
+                        <p>Now send your email using our fake SMTP server and integration of your choice!</p>
+                        <p>Good luck! Hope it works.</p>
+                      </div>
+                      <!-- Example of invalid for email html/css, will be detected by Mailtrap: -->
+                      <style>
+                        .main { background-color: white; }
+                        a:hover { border-left-width: 1em; min-height: 2em; }
+                      </style>
+                    </body>
+                  </html>
+
+                  --boundary-string--
+        '401':
+          description: Returns unauthorized error message. Check your credentials.
+          content:
+            text/plain:
+              schema:
+                type: string
+              example: '{"error":"Incorrect API token"}'
+        '403':
+          description: Returns forbidden error message. Check your permissions.
+          content:
+            text/plain:
+              schema:
+                type: string
+              example: '{:errors=>"Inbox is not active or you have insufficient permissions"}'
+        '404':
+          $ref: '#/components/responses/NOT_FOUND'
+      operationId: getInboxEmailMessageBodyAsEml
+    parameters:
+      - $ref: '#/components/parameters/account_id'
+      - $ref: '#/components/parameters/inbox_id'
+      - $ref: '#/components/parameters/message_id'
+  '/api/accounts/{account_id}/inboxes/{inbox_id}/messages/{message_id}/mail_headers':
+    get:
+      summary: Get mail headers
+      description: Get mail headers of a message
+      tags:
+        - Messages
+      responses:
+        '200':
+          description: Returns mail headers of the message
+          content:
+            application/json:
+              schema:
+                x-examples:
+                  Example 1:
+                    headers:
+                      bcc: john_doe@example.com
+                      cc: john_doe@example.com
+                      from: john_doe@example.com
+                      to: john_doe@example.com
+                      subject: Your Example Order Confirmation
+                type: object
+                properties:
+                  headers:
+                    type: object
+                    description: An object containing key/value pairs of header names and value. The key/value pairs must be strings.
+              examples:
+                Example 1:
+                  value:
+                    headers:
+                      bcc: john_doe@example.com
+                      cc: john_doe@example.com
+                      from: john_doe@example.com
+                      to: john_doe@example.com
+                      subject: Your Example Order Confirmation
+        '401':
+          $ref: '#/components/responses/UNAUTHENTICATED'
+        '403':
+          $ref: '#/components/responses/PERMISSION_DENIED'
+        '404':
+          $ref: '#/components/responses/NOT_FOUND'
+      operationId: getMailHeadersOfEmailMessage
+    parameters:
+      - $ref: '#/components/parameters/account_id'
+      - $ref: '#/components/parameters/inbox_id'
+      - $ref: '#/components/parameters/message_id'
+  '/api/accounts/{account_id}/inboxes/{inbox_id}/messages/{message_id}/attachments':
+    get:
+      summary: Get attachments
+      description: Get message attachments by inbox_id and message_id.
+      tags:
+        - Attachments
+      parameters:
+        - name: attachment_type
+          description: Attachment type
+          in: query
+          schema:
+            type: string
+          example: inline
+      responses:
+        '200':
+          description: Lists attachments with their details and download paths.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                    message_id:
+                      type: integer
+                    filename:
+                      type: string
+                    attachment_type:
+                      type: string
+                    content_type:
+                      type: string
+                    content_id:
+                      type: string
+                      nullable: true
+                    transfer_encoding:
+                      type: string
+                      nullable: true
+                    attachment_size:
+                      type: integer
+                    created_at:
+                      type: string
+                    updated_at:
+                      type: string
+                    attachment_human_size:
+                      type: string
+                    download_path:
+                      type: string
+              example:
+                - id: 67
+                  message_id: 457
+                  filename: test.csv
+                  attachment_type: inline
+                  content_type: plain/text
+                  content_id: null
+                  transfer_encoding: null
+                  attachment_size: 0
+                  created_at: '2022-06-02T19:25:54.827Z'
+                  updated_at: '2022-06-02T19:25:54.827Z'
+                  attachment_human_size: 0 Bytes
+                  download_path: /api/accounts/3831/inboxes/4394/messages/457/attachments/67/download
+        '401':
+          $ref: '#/components/responses/UNAUTHENTICATED'
+        '403':
+          description: Returns forbidden error message. Check your permissions.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  errors:
+                    type: string
+                    example: Inbox is not active or you have insufficient permissions
+        '404':
+          $ref: '#/components/responses/NOT_FOUND'
+      operationId: getInboxMessageAttachments
+    parameters:
+      - $ref: '#/components/parameters/account_id'
+      - $ref: '#/components/parameters/inbox_id'
+      - $ref: '#/components/parameters/message_id'
+  '/api/accounts/{account_id}/inboxes/{inbox_id}/messages/{message_id}/attachments/{attachment_id}':
+    get:
+      summary: Get single attachment
+      description: Get message single attachment by id.
+      tags:
+        - Attachments
+      responses:
+        '200':
+          description: Returns attachment details and download path.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                  message_id:
+                    type: integer
+                  filename:
+                    type: string
+                  attachment_type:
+                    type: string
+                  content_type:
+                    type: string
+                  content_id:
+                    type: string
+                    nullable: true
+                  transfer_encoding:
+                    type: string
+                    nullable: true
+                  attachment_size:
+                    type: integer
+                  created_at:
+                    type: string
+                  updated_at:
+                    type: string
+                  attachment_human_size:
+                    type: string
+                  download_path:
+                    type: string
+              example:
+                id: 70
+                message_id: 460
+                filename: test.csv
+                attachment_type: inline
+                content_type: plain/text
+                content_id: null
+                transfer_encoding: null
+                attachment_size: 0
+                created_at: '2022-06-02T19:25:55.687Z'
+                updated_at: '2022-06-02T19:25:55.687Z'
+                attachment_human_size: 0 Bytes
+                download_path: /api/accounts/3838/inboxes/4401/messages/460/attachments/70/download
+        '401':
+          $ref: '#/components/responses/UNAUTHENTICATED'
+        '403':
+          description: Returns forbidden error message. Check your permissions.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  errors:
+                    type: string
+                    example: Inbox is not active or you have insufficient permissions
+        '404':
+          $ref: '#/components/responses/NOT_FOUND'
+      operationId: getInboxMessageAttachment
+    parameters:
+      - $ref: '#/components/parameters/account_id'
+      - $ref: '#/components/parameters/inbox_id'
+      - $ref: '#/components/parameters/message_id'
+      - $ref: '#/components/parameters/attachment_id'
+components:
+  schemas:
+    Inbox:
+      $ref: ../models/TestingInbox.yaml
+    InboxMessageWithoutBlacklistsReportInfo:
+      $ref: ../models/TestingMessageWithoutBlacklistsReportInfo.yaml
+    InboxMessageWithBlacklistsReportInfo:
+      $ref: ../models/TestingMessageWithBlacklistsReportInfo.yaml
+    Project:
+      $ref: ../models/TestingProject.yaml
+    EmailWithText:
+      $ref: ../models/SendEmailWithText.yaml
+    EmailWithHtml:
+      $ref: ../models/SendEmailWithHtml.yaml
+    EmailWithTextAndHtml:
+      $ref: ../models/SendEmailWithTextAndHtml.yaml
+    EmailFromTemplate:
+      $ref: ../models/SendEmailFromTemplate.yaml
+    BatchEmail:
+      $ref: ../models/BatchEmail.yaml
+  examples:
+    Projects:
+      $ref: ../examples/TestingProjects.yaml
+    Project:
+      $ref: ../examples/TestingProject.yaml
+    Inboxes:
+      $ref: ../examples/TestingInboxes.yaml
+  securitySchemes:
+    HeaderAuth:
+      type: apiKey
+      description: Pass the API token in the Api-Token
+      in: header
+      name: Api-Token
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  responses:
+    UNAUTHENTICATED:
+      description: Returns unauthorized error message. Check your credentials.
+      content:
+        application/json:
+          schema:
+            $ref: ../models/UnauthenticatedResponse.yml
+    PERMISSION_DENIED:
+      description: Returns forbidden error message. Check your permissions.
+      content:
+        application/json:
+          schema:
+            $ref: ../models/PermissionsDeniedResponse.yml
+    NOT_FOUND:
+      description: Returns not found error message
+      content:
+        application/json:
+          schema:
+            $ref: ../models/NotFoundResponse.yml
+    ProjectsResponse:
+      description: |-
+        Lists project attributes and inboxes of this project with their attributes.
+        - **permissions** returns the permissions of the token for the project
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/Project'
+          examples:
+            ProjectsList:
+              $ref: '#/components/examples/Projects'
+    ProjectResponse:
+      description: Returns project details
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Project'
+    UpdateProjectResponse:
+      description: Returns updated project details
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Project'
+          examples:
+            Project:
+              $ref: '#/components/examples/Project'
+    InboxesResponse:
+      description: |-
+        Returns the list of inboxes in the account to which the API token has access.
+        - **permissions** returns the permissions of the token for the inbox.
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/Inbox'
+          examples:
+            InboxesList:
+              $ref: '#/components/examples/Inboxes'
+    InboxResponse:
+      description: |-
+        Returns attributes of the inbox.
+        - **permissions** returns the permissions of the token for the inbox.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Inbox'
+  parameters:
+    account_id:
+      description: Unique account ID
+      name: account_id
+      in: path
+      required: true
+      schema:
+        type: integer
+        format: int64
+        minimum: 1
+        example: 3229
+    inbox_id:
+      description: Unique inbox ID
+      name: inbox_id
+      in: path
+      required: true
+      schema:
+        type: integer
+        format: int64
+        minimum: 1
+        example: 4015
+    message_id:
+      description: Unique message ID
+      name: message_id
+      in: path
+      required: true
+      schema:
+        type: integer
+        format: int64
+        minimum: 1
+        example: 427
+    attachment_id:
+      name: attachment_id
+      description: Unique attachment ID
+      in: path
+      required: true
+      schema:
+        type: integer
+        format: int64
+        minimum: 1
+        example: 1591
+    project_id:
+      name: project_id
+      description: Unique project ID
+      in: path
+      required: true
+      schema:
+        type: integer
+        format: int64
+        minimum: 1
+        example: 4032

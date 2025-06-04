@@ -54,7 +54,7 @@ func (c *Client) doRequest(method, endpoint string, body interface{}) (*http.Res
 	baseURL := c.baseURL
 	if endpoint == "/api/send" || endpoint == "/api/batch" {
 		baseURL = sendingAPIURL
-	} else if endpoint[:10] == "/api/send/" {
+	} else if len(endpoint) > 10 && endpoint[:10] == "/api/send/" {
 		baseURL = sandboxAPIURL
 	}
 

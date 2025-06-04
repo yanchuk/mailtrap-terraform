@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -130,10 +131,11 @@ func (d *ProjectDataSource) Read(ctx context.Context, req datasource.ReadRequest
 	data.Name = types.StringValue(project.Name)
 
 	// Convert share links
-	shareLinksObj, diags := types.ObjectValueFrom(ctx, map[string]types.Type{
+	shareLinksAttrTypes := map[string]attr.Type{
 		"admin":  types.StringType,
 		"viewer": types.StringType,
-	}, &ShareLinksModel{
+	}
+	shareLinksObj, diags := types.ObjectValueFrom(ctx, shareLinksAttrTypes, &ShareLinksModel{
 		Admin:  types.StringValue(project.ShareLinks.Admin),
 		Viewer: types.StringValue(project.ShareLinks.Viewer),
 	})

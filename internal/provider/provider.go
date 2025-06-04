@@ -2,8 +2,8 @@ package provider
 
 import (
 	"context"
-	"fmt"
 	"os"
+	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -147,7 +147,5 @@ type ProviderData struct {
 
 // Helper function to parse int64
 func parseInt64(s string) (int64, error) {
-	var i int64
-	_, err := fmt.Sscanf(s, "%d", &i)
-	return i, err
+	return strconv.ParseInt(s, 10, 64)
 }

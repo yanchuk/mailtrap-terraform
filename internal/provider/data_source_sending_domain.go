@@ -37,6 +37,7 @@ type SendingDomainDataSourceModel struct {
 	DNSStatus        types.Object `tfsdk:"dns_status"`
 }
 
+
 func (d *SendingDomainDataSource) Metadata(ctx context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_sending_domain"
 }
@@ -349,14 +350,14 @@ func (d *SendingDomainDataSource) convertDNSRecordsToTerraform(ctx context.Conte
 	}
 
 	// Create lists
-	cnameList, d := types.ListValue(types.ObjectType{AttrTypes: dnsRecordAttrTypes}, cnameRecords)
-	diags.Append(d...)
+	cnameList, cnameListDiags := types.ListValue(types.ObjectType{AttrTypes: dnsRecordAttrTypes}, cnameRecords)
+	diags.Append(cnameListDiags...)
 	
-	mxList, d := types.ListValue(types.ObjectType{AttrTypes: dnsRecordAttrTypes}, mxRecords)
-	diags.Append(d...)
+	mxList, mxListDiags := types.ListValue(types.ObjectType{AttrTypes: dnsRecordAttrTypes}, mxRecords)
+	diags.Append(mxListDiags...)
 	
-	txtList, d := types.ListValue(types.ObjectType{AttrTypes: dnsRecordAttrTypes}, txtRecords)
-	diags.Append(d...)
+	txtList, txtListDiags := types.ListValue(types.ObjectType{AttrTypes: dnsRecordAttrTypes}, txtRecords)
+	diags.Append(txtListDiags...)
 
 	// Create the DNS records object
 	dnsRecordsAttrTypes := map[string]attr.Type{
@@ -365,12 +366,12 @@ func (d *SendingDomainDataSource) convertDNSRecordsToTerraform(ctx context.Conte
 		"txt":   types.ListType{ElemType: types.ObjectType{AttrTypes: dnsRecordAttrTypes}},
 	}
 
-	dnsRecordsObj, d := types.ObjectValue(dnsRecordsAttrTypes, map[string]attr.Value{
+	dnsRecordsObj, dnsRecordsDiags := types.ObjectValue(dnsRecordsAttrTypes, map[string]attr.Value{
 		"cname": cnameList,
 		"mx":    mxList,
 		"txt":   txtList,
 	})
-	diags.Append(d...)
+	diags.Append(dnsRecordsDiags...)
 
 	return dnsRecordsObj, diags
 }

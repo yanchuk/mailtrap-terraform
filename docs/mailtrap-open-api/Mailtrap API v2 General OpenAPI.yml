@@ -1,0 +1,553 @@
+openapi: 3.1.0
+info:
+  description: API for Mailtrap.io General functionality
+  version: 2.0-oas3
+  title: General
+  contact:
+    name: Mailtrap
+    url: 'https://help.mailtrap.io'
+    email: support@mailtrap.io
+  license:
+    name: Creative Commons Attribution-ShareAlike 4.0 International (CC BY-SA 4.0)
+    url: 'https://creativecommons.org/licenses/by-sa/4.0/'
+security:
+  - HeaderAuth: []
+  - BearerAuth: []
+servers:
+  - description: Mailtrap Testing API
+    url: 'https://mailtrap.io'
+tags:
+  - name: Account Accesses
+    description: Account Accesses
+  - name: Account Users
+    description: Account Users API
+  - name: Accounts
+    description: Accounts API
+  - name: Billing
+    description: Account Billing
+  - name: Permissions
+    description: Interactions with permission
+paths:
+  /api/accounts:
+    get:
+      operationId: getAllAccounts
+      summary: Get all accounts
+      description: Get a list of your Mailtrap accounts.
+      tags:
+        - Accounts
+      responses:
+        '200':
+          description: 'Returns the list of accounts to which the API token has access. **access_levels** can return 1000 (account owner), 100 (admin), 10 (viewer).'
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                    name:
+                      type: string
+                    access_levels:
+                      type: array
+                      items:
+                        type: integer
+              example:
+                - id: 26730
+                  name: James
+                  access_levels:
+                    - 100
+                - id: 26731
+                  name: John
+                  access_levels:
+                    - 1000
+        '401':
+          $ref: '#/components/responses/UNAUTHENTICATED'
+  '/api/accounts/{account_id}/account_accesses':
+    get:
+      operationId: getAllUsersInAccount
+      summary: List User & Invite account accesses
+      description: |-
+        Get list of account accesses for which `specifier_type` is `User` or `Invite`. You have to have
+        account admin/owner permissions for this endpoint to work.
+
+        If you specify `project_ids`, `inbox_ids` or `domain_ids`, the endpoint will return account
+        accesses for these resources.
+      tags:
+        - Account Accesses
+      parameters:
+        - name: project_ids
+          description: The identifiers of the projects for which to include the results
+          in: query
+          schema:
+            type: array
+            items:
+              type: string
+            example:
+              - '3938'
+        - name: inbox_ids
+          description: The identifiers of the inboxes for which to include the results
+          in: query
+          schema:
+            type: array
+            items:
+              type: string
+            example:
+              - '3757'
+        - schema:
+            type: array
+            items:
+              type: string
+            example:
+              - '3883'
+          in: query
+          name: domain_ids
+          description: The identifiers of the domains for which to include the results
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AccountAccess'
+        '401':
+          $ref: '#/components/responses/UNAUTHENTICATED'
+        '403':
+          $ref: '#/components/responses/PERMISSION_DENIED'
+    parameters:
+      - $ref: '#/components/parameters/account_id'
+  '/api/accounts/{account_id}/account_accesses/{account_access_id}':
+    delete:
+      operationId: deleteAccountAccessById
+      summary: Remove account access
+      description: |-
+        If specifier type is User, it removes user permissions.
+
+        If specifier type is Invite or ApiToken, it removes specifier along with permissions.
+
+        You have to be an account admin/owner for this endpoint to work.
+      tags:
+        - Account Accesses
+      responses:
+        '200':
+          description: Returns confirmation of successful deletion and id of the deleted access.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+              example:
+                id: 2981
+        '401':
+          $ref: '#/components/responses/UNAUTHENTICATED'
+        '403':
+          $ref: '#/components/responses/PERMISSION_DENIED'
+        '404':
+          $ref: '#/components/responses/NOT_FOUND'
+    parameters:
+      - $ref: '#/components/parameters/account_id'
+      - schema:
+          type: integer
+          format: int64
+          minimum: 1
+          example: 4788
+        name: account_access_id
+        in: path
+        description: Unique account access ID
+        required: true
+  '/api/accounts/{account_id}/account_accesses/{account_access_id}/permissions/bulk':
+    put:
+      operationId: updateUserPermissions
+      summary: Manage user or token permissions
+      description: |-
+        Manage user or token permissions. For this endpoint, you should send an array of objects (in JSON format) as the body of the request.
+        If you send a combination of **resource_type** and **resource_id** that already exists, the permission is **updated**.
+        If the combination doesn't exist, the permission is **created**.
+      tags:
+        - Permissions
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                permissions:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      resource_id:
+                        type: string
+                      resource_type:
+                        type: string
+                        enum:
+                          - account
+                          - billing
+                          - project
+                          - inbox
+                          - sending_domain
+                          - email_campaign_permission_scope
+                      access_level:
+                        type: string
+                        additionalProperties:
+                          type:
+                            - string
+                            - integer
+                        description: |-
+                          Use a number or string. The higher the number, the more rights the specifier has:
+                          - 100 or "admin"
+                          - 10 or "viewer"
+                      _destroy:
+                        type: boolean
+                        description: '(Optional) If true, instead of creating/updating the permission, it destroys it.'
+            example:
+              permissions:
+                - resource_id: '3281'
+                  resource_type: account
+                  access_level: viewer
+                - resource_id: '3809'
+                  resource_type: inbox
+                  _destroy: true
+      responses:
+        '200':
+          description: Returns message about successful update of permissions.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+              example:
+                message: Permissions have been updated!
+        '401':
+          $ref: '#/components/responses/UNAUTHENTICATED'
+        '403':
+          $ref: '#/components/responses/PERMISSION_DENIED'
+        '404':
+          $ref: '#/components/responses/NOT_FOUND'
+    parameters:
+      - $ref: '#/components/parameters/account_id'
+      - schema:
+          type: integer
+          format: int64
+          minimum: 1
+          example: 5142
+        name: account_access_id
+        in: path
+        required: true
+        description: Unique account access ID
+  '/api/accounts/{account_id}/permissions/resources':
+    get:
+      operationId: getResources
+      summary: Get resources
+      description: 'Get all resources in your account (Inboxes, Projects, Domains, Email Campaigns, Billing and Account itself) to which the token has admin access.'
+      tags:
+        - Permissions
+      responses:
+        '200':
+          description: |-
+            Returns the resources nested according to their hierarchy.
+
+            - **access_level** in this response represents the access level of the token used to make the request.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                    name:
+                      type: string
+                    type:
+                      type: string
+                    access_level:
+                      type: integer
+                    resources:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          id:
+                            type: integer
+                          name:
+                            type: string
+                          type:
+                            type: string
+                          access_level:
+                            type: integer
+                          resources:
+                            type: array
+                            items:
+                              nullable: true
+                              type: object
+              example:
+                - id: 4001
+                  name: My First Project
+                  type: project
+                  access_level: 1
+                  resources:
+                    - id: 3816
+                      name: My First Inbox
+                      type: inbox
+                      access_level: 100
+                      resources: []
+        '401':
+          $ref: '#/components/responses/UNAUTHENTICATED'
+        '403':
+          $ref: '#/components/responses/PERMISSION_DENIED'
+    parameters:
+      - $ref: '#/components/parameters/account_id'
+  '/api/accounts/{account_id}/billing/usage':
+    get:
+      operationId: getAccountBillingUsage
+      summary: Get current billing cycle usage
+      description: Get current billing cycle usage for Email Testing and Email Sending.
+      tags:
+        - Billing
+      responses:
+        '200':
+          description: Returns an object with current billing cycle usage for Email Testing and Email Sending if available.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  billing:
+                    type: object
+                    properties:
+                      cycle_start:
+                        type: string
+                        format: date-time
+                      cycle_end:
+                        type: string
+                        format: date-time
+                  testing:
+                    type: object
+                    properties:
+                      plan:
+                        type: object
+                        properties:
+                          name:
+                            type: string
+                      usage:
+                        type: object
+                        properties:
+                          sent_messages_count:
+                            type: object
+                            properties:
+                              current:
+                                type: integer
+                              limit:
+                                type: integer
+                          forwarded_messages_count:
+                            type: object
+                            properties:
+                              current:
+                                type: integer
+                              limit:
+                                type: integer
+                  sending:
+                    type: object
+                    properties:
+                      plan:
+                        type: object
+                        properties:
+                          name:
+                            type: string
+                      usage:
+                        type: object
+                        properties:
+                          sent_messages_count:
+                            type: object
+                            properties:
+                              current:
+                                type: integer
+                              limit:
+                                type: integer
+              example:
+                billing:
+                  cycle_start: '2024-02-15T21:11:59.624Z'
+                  cycle_end: '2024-02-15T21:11:59.624Z'
+                testing:
+                  plan:
+                    name: Individual
+                  usage:
+                    sent_messages_count:
+                      current: 1234
+                      limit: 5000
+                    forwarded_messages_count:
+                      current: 0
+                      limit: 100
+                sending:
+                  plan:
+                    name: Basic 10K
+                  usage:
+                    sent_messages_count:
+                      current: 6789
+                      limit: 10000
+        '401':
+          $ref: '#/components/responses/UNAUTHENTICATED'
+        '403':
+          $ref: '#/components/responses/PERMISSION_DENIED'
+    parameters:
+      - $ref: '#/components/parameters/account_id'
+components:
+  schemas:
+    AccountAccess:
+      title: AccountAccess
+      description: Assigns resource-specific permissions to a specifier.
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 42
+          description: The unique identifier of the account access
+        specifier_type:
+          type: string
+          enum:
+            - User
+            - Invite
+            - ApiToken
+          example: User
+          description: The type of the specifier that has permissions to the resources
+        specifier:
+          anyOf:
+            - description: Describes a specifier of type `User`
+              properties:
+                id:
+                  type: integer
+                  description: User unique identifier
+                email:
+                  type: string
+                  format: email
+                  description: User email
+                name:
+                  type: string
+                  description: User name
+                two_factor_authentication_enabled:
+                  type: boolean
+                  description: Indicates whether two-factor authentication (2FA) is enabled for the user
+            - description: Describes a specifier of type `Invite`
+              properties:
+                id:
+                  type: integer
+                  description: Invite unique identifier
+                email:
+                  type: string
+                  format: email
+                  description: Email of the invited user
+            - description: Describes a specifier of type `ApiToken`
+              properties:
+                id:
+                  type: integer
+                  description: Api token unique identifier
+                name:
+                  type: string
+                  description: Api token name
+                author_name:
+                  type: string
+                  description: Describes the origin of the token
+                  example: System
+                token:
+                  type: string
+                  description: The token value
+                expires_at:
+                  type: string
+                  format: date-time
+                  description: Api token expiration time
+          description: Entity that has permissions to the resources
+          type: object
+        resources:
+          type: array
+          description: A list of resources to which the specifier has access
+          items:
+            type: object
+            properties:
+              resource_id:
+                type: integer
+                description: The unique identifier of resource to which the specifier has access
+              resource_type:
+                type: string
+                description: The type of resource to which the specifier has access
+                enum:
+                  - account
+                  - billing
+                  - project
+                  - inbox
+                  - sending_domain
+                  - email_campaign_permission_scope
+              access_level:
+                type: integer
+                enum:
+                  - 1000
+                  - 100
+                  - 50
+                  - 10
+                  - 1
+                description: |-
+                  The higher the value, the more rights the specifier has:
+                  - 1000 is for owner
+                  - 100 is for admin
+                  - 50 is for viewer+
+                  - 10 is for viewer
+                  - 1 is for indeterminate
+        permissions:
+          type: object
+          description: Describes the specifier's permissions to resources
+          properties:
+            can_read:
+              type: boolean
+            can_update:
+              type: boolean
+            can_destroy:
+              type: boolean
+            can_leave:
+              type: boolean
+  securitySchemes:
+    HeaderAuth:
+      type: apiKey
+      description: Pass the API token in the Api-Token
+      in: header
+      name: Api-Token
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  responses:
+    UNAUTHENTICATED:
+      description: Returns unauthorized error message. Check your credentials.
+      content:
+        application/json:
+          schema:
+            $ref: ../models/UnauthenticatedResponse.yml
+    PERMISSION_DENIED:
+      description: Returns forbidden error message. Check your permissions.
+      content:
+        application/json:
+          schema:
+            $ref: ../models/PermissionsDeniedResponse.yml
+    NOT_FOUND:
+      description: Returns not found error message
+      content:
+        application/json:
+          schema:
+            $ref: ../models/NotFoundResponse.yml
+  parameters:
+    account_id:
+      description: Unique account ID
+      name: account_id
+      in: path
+      required: true
+      schema:
+        type: integer
+        format: int64
+        minimum: 1
+        example: 3229

@@ -1,6 +1,12 @@
 # Terraform Provider for Mailtrap
 
-The Terraform Mailtrap provider allows you to manage Mailtrap resources using Terraform.
+[![Go Report Card](https://goreportcard.com/badge/github.com/yanchuk/mailtrap-terraform)](https://goreportcard.com/report/github.com/yanchuk/mailtrap-terraform)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Tests](https://github.com/yanchuk/mailtrap-terraform/workflows/Tests/badge.svg)](https://github.com/yanchuk/mailtrap-terraform/actions)
+
+An **unofficial** Terraform provider for Mailtrap that allows you to manage Mailtrap resources using Terraform. This provider enables Infrastructure as Code (IaC) for email testing and sending domain management through the Mailtrap API.
+
+> **Note**: This is an unofficial provider created by Oleksii Ianchuk and is not officially supported or maintained by Mailtrap.
 
 ## Features
 
@@ -24,13 +30,14 @@ cd mailtrap-terraform
 
 2. Build the provider
 ```bash
-go build -o mailtrap-terraform
+go mod tidy
+go build -o terraform-provider-mailtrap
 ```
 
 3. Install the provider locally
 ```bash
-mkdir -p ~/.terraform.d/plugins/registry.terraform.io/mailtrap/mailtrap/1.0.0/darwin_arm64
-mv terraform-provider-mailtrap ~/.terraform.d/plugins/registry.terraform.io/mailtrap/mailtrap/1.0.0/darwin_arm64/
+mkdir -p ~/.terraform.d/plugins/registry.terraform.io/yanchuk/mailtrap/1.0.0/darwin_arm64
+mv terraform-provider-mailtrap ~/.terraform.d/plugins/registry.terraform.io/yanchuk/mailtrap/1.0.0/darwin_arm64/
 ```
 
 ## Using the Provider
@@ -41,7 +48,7 @@ mv terraform-provider-mailtrap ~/.terraform.d/plugins/registry.terraform.io/mail
 terraform {
   required_providers {
     mailtrap = {
-      source  = "mailtrap/mailtrap"
+      source  = "yanchuk/mailtrap"
       version = "~> 1.0"
     }
   }
@@ -341,8 +348,42 @@ The following features are planned for future releases:
 
 ## Contributing
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+Contributions are welcome! Please feel free to submit a Pull Request. See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines.
+
+## Author
+
+Created by [Oleksii Ianchuk](https://github.com/yanchuk)
+
+## Disclaimer
+
+This is an unofficial provider and is not affiliated with or supported by Mailtrap. Use at your own risk.
+
+## Development
+
+### Running Tests
+
+```bash
+# Run all tests
+go test ./...
+
+# Run tests with verbose output
+go test -v ./...
+
+# Run tests with coverage
+go test -cover ./...
+```
+
+### Building
+
+```bash
+# Build the provider
+go build -o terraform-provider-mailtrap
+
+# Cross-compile for different platforms
+GOOS=linux GOARCH=amd64 go build -o terraform-provider-mailtrap
+GOOS=windows GOARCH=amd64 go build -o terraform-provider-mailtrap.exe
+```
 
 ## License
 
-This provider is distributed under the [Mozilla Public License 2.0](LICENSE).
+This provider is distributed under the [MIT License](LICENSE).

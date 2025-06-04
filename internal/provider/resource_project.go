@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -165,10 +166,11 @@ func (r *ProjectResource) Create(ctx context.Context, req resource.CreateRequest
 	data.Name = types.StringValue(project.Name)
 
 	// Convert share links
-	shareLinksObj, diags := types.ObjectValueFrom(ctx, map[string]types.Type{
+	shareLinksAttrTypes := map[string]attr.Type{
 		"admin":  types.StringType,
 		"viewer": types.StringType,
-	}, &ShareLinksModel{
+	}
+	shareLinksObj, diags := types.ObjectValueFrom(ctx, shareLinksAttrTypes, &ShareLinksModel{
 		Admin:  types.StringValue(project.ShareLinks.Admin),
 		Viewer: types.StringValue(project.ShareLinks.Viewer),
 	})
@@ -208,10 +210,11 @@ func (r *ProjectResource) Read(ctx context.Context, req resource.ReadRequest, re
 	data.Name = types.StringValue(project.Name)
 
 	// Convert share links
-	shareLinksObj, diags := types.ObjectValueFrom(ctx, map[string]types.Type{
+	shareLinksAttrTypes := map[string]attr.Type{
 		"admin":  types.StringType,
 		"viewer": types.StringType,
-	}, &ShareLinksModel{
+	}
+	shareLinksObj, diags := types.ObjectValueFrom(ctx, shareLinksAttrTypes, &ShareLinksModel{
 		Admin:  types.StringValue(project.ShareLinks.Admin),
 		Viewer: types.StringValue(project.ShareLinks.Viewer),
 	})
@@ -257,10 +260,11 @@ func (r *ProjectResource) Update(ctx context.Context, req resource.UpdateRequest
 	data.Name = types.StringValue(project.Name)
 
 	// Convert share links
-	shareLinksObj, diags := types.ObjectValueFrom(ctx, map[string]types.Type{
+	shareLinksAttrTypes := map[string]attr.Type{
 		"admin":  types.StringType,
 		"viewer": types.StringType,
-	}, &ShareLinksModel{
+	}
+	shareLinksObj, diags := types.ObjectValueFrom(ctx, shareLinksAttrTypes, &ShareLinksModel{
 		Admin:  types.StringValue(project.ShareLinks.Admin),
 		Viewer: types.StringValue(project.ShareLinks.Viewer),
 	})

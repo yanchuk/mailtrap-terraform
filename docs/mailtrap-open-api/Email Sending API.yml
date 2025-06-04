@@ -1,0 +1,318 @@
+openapi: 3.1.0
+info:
+  description: API for Mailtrap.io Sending functionality
+  version: 2.0-oas3
+  title: Email Sending API
+  contact:
+    name: Mailtrap
+    url: 'https://help.mailtrap.io'
+    email: support@mailtrap.io
+  license:
+    name: Creative Commons Attribution-ShareAlike 4.0 International (CC BY-SA 4.0)
+    url: 'https://creativecommons.org/licenses/by-sa/4.0/'
+security:
+  - HeaderAuth: []
+  - BearerAuth: []
+servers:
+  - description: Mailtrap API
+    url: 'https://mailtrap.io'
+tags:
+  - name: Emails
+    description: Send email
+  - name: Sending domains
+    description: Interactions with sending domains
+paths:
+  /api/send:
+    servers:
+      - description: Mailtrap Sending API
+        url: 'https://send.api.mailtrap.io'
+    post:
+      description: 'Send email (text, html, text&html, templates)'
+      operationId: sendEmail
+      summary: Send email (including templates)
+      tags:
+        - Emails
+      requestBody:
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - $ref: '#/components/schemas/EmailWithText'
+                - $ref: '#/components/schemas/EmailWithHtml'
+                - $ref: '#/components/schemas/EmailWithTextAndHtml'
+                - $ref: '#/components/schemas/EmailFromTemplate'
+      responses:
+        '200':
+          description: Success. Message has been delivered.
+          content:
+            application/json:
+              schema:
+                $ref: ../models/SentResponse.yaml
+        '400':
+          description: Bad request. Fix errors listed in response before retrying.
+          content:
+            application/json:
+              schema:
+                $ref: ../models/SendEmailErrorResponse.yaml
+        '401':
+          description: Unauthorized. Make sure you are sending correct credentials with the request before retrying.
+          content:
+            application/json:
+              schema:
+                $ref: ../models/SendEmailErrorResponse.yaml
+        '403':
+          description: Forbidden. Make sure domain verification process is completed.
+          content:
+            application/json:
+              schema:
+                $ref: ../models/SendEmailErrorResponse.yaml
+        '500':
+          description: Internal error. Mail was not delivered. Retry later or contact support.
+          content:
+            application/json:
+              schema:
+                $ref: ../models/SendEmailErrorResponse.yaml
+  /api/batch:
+    servers:
+      - description: Mailtrap Sending API
+        url: 'https://send.api.mailtrap.io'
+    post:
+      description: |
+        Batch send email (text, html, text&html, templates). Please note that the endpoint will return a 200-level http status, even when sending for individual messages may fail. Users of this endpoint should check the success and errors for each message in the response (the results are ordered the same as the original messages - `requests`). Please note that the endpoint accepts up to 500 messages per API call, and up to 50 MB payload size, including attachments.
+      operationId: batchSendEmail
+      summary: Batch send email (including templates)
+      tags:
+        - Emails
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BatchEmail'
+      responses:
+        '200':
+          description: Success. Check individual `responses` if messages have been delivered.
+          content:
+            application/json:
+              schema:
+                $ref: ../models/BatchSentResponse.yaml
+        '400':
+          description: Bad request. Fix errors listed in response before retrying.
+          content:
+            application/json:
+              schema:
+                $ref: ../models/SendEmailErrorResponse.yaml
+        '401':
+          description: Unauthorized. Make sure you are sending correct credentials with the request before retrying.
+          content:
+            application/json:
+              schema:
+                $ref: ../models/SendEmailErrorResponse.yaml
+        '500':
+          description: Internal error. Messages were not delivered. Retry later or contact support.
+          content:
+            application/json:
+              schema:
+                $ref: ../models/SendEmailErrorResponse.yaml
+  '/api/accounts/{account_id}/sending_domains':
+    post:
+      summary: Create sending domain
+      description: |-
+        Create a sending domain. To later check the status of the newly created domain,
+        review the compliance_status and dns_verified fields in the response of the
+        [Get domain by ID](/docs/mailtrap-api-docs/5301121d337f4-get-domain-by-id)
+        or [Get sending domains endpoints](/docs/mailtrap-api-docs/4b18f76d7e596-get-sending-domains).
+      tags:
+        - Sending domains
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                sending_domain:
+                  type: object
+                  properties:
+                    domain_name:
+                      type: string
+                      format: hostname
+                      description: Domain name
+                      domain_name: mailtrap.io
+            example:
+              sending_domain:
+                domain_name: mailtrap.io
+      responses:
+        '200':
+          $ref: '#/components/responses/SendingDomainResponse'
+        '401':
+          $ref: '#/components/responses/UNAUTHENTICATED'
+        '403':
+          $ref: '#/components/responses/PERMISSION_DENIED'
+        '422':
+          description: Returns validation errors.
+          content:
+            application/json:
+              schema:
+                $ref: ../models/UnprocessableEntity.yml
+              example:
+                errors:
+                  base:
+                    - 'Validation failed: Domain name has already been taken'
+      operationId: createSendingDomain
+      parameters:
+        - $ref: '#/components/parameters/account_id'
+    get:
+      summary: Get sending domains
+      description: Get sending domains and their statuses
+      tags:
+        - Sending domains
+      responses:
+        '200':
+          $ref: '#/components/responses/SendingDomainsResponse'
+        '401':
+          $ref: '#/components/responses/UNAUTHENTICATED'
+        '403':
+          $ref: '#/components/responses/PERMISSION_DENIED'
+      operationId: getSendingDomains
+      parameters:
+        - $ref: '#/components/parameters/account_id'
+  '/api/accounts/{account_id}/sending_domains/{sending_domain_id}':
+    get:
+      summary: Get domain by ID
+      description: Get domain data and it's status.
+      tags:
+        - Sending domains
+      responses:
+        '200':
+          $ref: '#/components/responses/SendingDomainResponse'
+        '401':
+          $ref: '#/components/responses/UNAUTHENTICATED'
+        '403':
+          $ref: '#/components/responses/PERMISSION_DENIED'
+        '404':
+          $ref: '#/components/responses/NOT_FOUND'
+      operationId: getSendingDomain
+      parameters:
+        - $ref: '#/components/parameters/account_id'
+        - $ref: '#/components/parameters/sending_domain_id'
+  '/api/accounts/{account_id}/sending_domains/{sending_domain_id}/send_setup_instructions':
+    post:
+      summary: Send sending domain setup instructions
+      description: Send sending domain setup instructions.
+      tags:
+        - Sending domains
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+                  description: Email to send setup instructions to
+            example:
+              email: devops@mailtrap.io
+      responses:
+        '204':
+          $ref: '#/components/responses/SendSendingDomainSetupInstructionsResponse'
+        '401':
+          $ref: '#/components/responses/UNAUTHENTICATED'
+        '403':
+          $ref: '#/components/responses/PERMISSION_DENIED'
+        '404':
+          $ref: '#/components/responses/NOT_FOUND'
+        '422':
+          description: Returns validation errors.
+          content:
+            application/json:
+              schema:
+                $ref: ../models/UnprocessableEntity.yml
+              example:
+                errors:
+                  email: Invalid email address
+      operationId: sendSendingDomainSetupInstructions
+      parameters:
+        - $ref: '#/components/parameters/account_id'
+        - $ref: '#/components/parameters/sending_domain_id'
+components:
+  securitySchemes:
+    HeaderAuth:
+      type: apiKey
+      description: Pass the API token in the Api-Token
+      in: header
+      name: Api-Token
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    EmailWithText:
+      $ref: ../models/SendEmailWithText.yaml
+    EmailWithHtml:
+      $ref: ../models/SendEmailWithHtml.yaml
+    EmailWithTextAndHtml:
+      $ref: ../models/SendEmailWithTextAndHtml.yaml
+    EmailFromTemplate:
+      $ref: ../models/SendEmailFromTemplate.yaml
+    BatchEmail:
+      $ref: ../models/BatchEmail.yaml
+  examples: {}
+  parameters:
+    account_id:
+      description: Unique account ID
+      name: account_id
+      in: path
+      required: true
+      schema:
+        type: integer
+        format: int64
+        minimum: 1
+        example: 3229
+    sending_domain_id:
+      description: Unique domain ID
+      name: sending_domain_id
+      in: path
+      required: true
+      schema:
+        type: integer
+        format: int64
+        minimum: 1
+        example: 432
+  responses:
+    UNAUTHENTICATED:
+      description: Returns unauthorized error message. Check your credentials.
+      content:
+        application/json:
+          schema:
+            $ref: ../models/UnauthenticatedResponse.yml
+    PERMISSION_DENIED:
+      description: Returns forbidden error message. Check your permissions.
+      content:
+        application/json:
+          schema:
+            $ref: ../models/PermissionsDeniedResponse.yml
+    NOT_FOUND:
+      description: Returns not found error message
+      content:
+        application/json:
+          schema:
+            $ref: ../models/NotFoundResponse.yml
+    SendingDomainResponse:
+      description: 'Lists domain attributes, DNS records, status'
+      content:
+        application/json:
+          schema:
+            $ref: ../models/SendingDomain.yaml
+    SendSendingDomainSetupInstructionsResponse:
+      description: Instructions email has been sent successfully
+    SendingDomainsResponse:
+      description: 'Lists domains with their attributes, DNS records, statuses'
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              data:
+                type: array
+                items:
+                  $ref: ../models/SendingDomain.yaml
