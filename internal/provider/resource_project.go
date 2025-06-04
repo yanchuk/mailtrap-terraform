@@ -15,7 +15,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
-	"github.com/mailtrap/terraform-provider-mailtrap/internal/client"
+	"github.com/yanchuk/mailtrap-terraform/internal/client"
 )
 
 // Ensure provider defined types fully satisfy framework interfaces.

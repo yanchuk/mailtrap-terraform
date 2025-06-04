@@ -7,7 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/mailtrap/terraform-provider-mailtrap/internal/client"
+	"github.com/yanchuk/mailtrap-terraform/internal/client"
 )
 
 func TestInboxResource_Metadata(t *testing.T) {

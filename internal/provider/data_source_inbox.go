@@ -7,7 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/mailtrap/terraform-provider-mailtrap/internal/client"
+	"github.com/yanchuk/mailtrap-terraform/internal/client"
 )
 
 // Ensure provider defined types fully satisfy framework interfaces.

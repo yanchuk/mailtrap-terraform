@@ -1,4 +1,4 @@
-module github.com/mailtrap/terraform-provider-mailtrap
+module github.com/yanchuk/mailtrap-terraform
 
 go 1.21
 

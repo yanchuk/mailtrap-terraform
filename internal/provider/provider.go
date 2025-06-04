@@ -11,7 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/provider/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/mailtrap/terraform-provider-mailtrap/internal/client"
+	"github.com/yanchuk/mailtrap-terraform/internal/client"
 )
 
 // Ensure MailtrapProvider satisfies various provider interfaces.
